@@ -519,9 +519,6 @@ async fn apply_jail_named_with_parser(
         .tool_call_parser(parser)
         .named_tool_filter(named_tool)
         .build();
-    out.filter_map(|ann| async move { ann.data })
-        .collect()
-        .await
     let out = jail.apply_with_finish_reason(input);
     tokio::pin!(out);
     out.filter_map(|ann| async move { ann.data })
