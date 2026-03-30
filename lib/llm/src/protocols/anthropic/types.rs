@@ -22,6 +22,7 @@ use dynamo_async_openai::types::{
     ChatCompletionTool, ChatCompletionToolChoiceOption, ChatCompletionToolType, FunctionName,
     FunctionObject, ImageUrl, ReasoningContent,
 };
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::protocols::openai::chat_completions::{
