@@ -10,6 +10,7 @@
 // Re-export all pure Anthropic protocol types so existing `use crate::protocols::anthropic::*`
 // continues to work throughout dynamo-llm.
 pub use dynamo_async_openai::types::anthropic::*;
+pub use serde::{Deserialize, Serialize};
 
 use dynamo_async_openai::types::{
     ChatCompletionMessageToolCall, ChatCompletionNamedToolChoice,
