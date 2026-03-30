@@ -10,7 +10,6 @@
 // Re-export all pure Anthropic protocol types so existing `use crate::protocols::anthropic::*`
 // continues to work throughout dynamo-llm.
 pub use dynamo_async_openai::types::anthropic::*;
-pub use serde::{Deserialize, Serialize};
 
 use dynamo_async_openai::types::{
     ChatCompletionMessageToolCall, ChatCompletionNamedToolChoice,
@@ -1327,7 +1326,7 @@ pub fn chat_completion_to_anthropic_response(
 // ---------------------------------------------------------------------------
 
 /// Request body for `POST /v1/messages/count_tokens`.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct AnthropicCountTokensRequest {
     pub model: String,
     pub messages: Vec<AnthropicMessage>,
@@ -1342,7 +1341,7 @@ pub struct AnthropicCountTokensRequest {
 }
 
 /// Response body for `POST /v1/messages/count_tokens`.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct AnthropicCountTokensResponse {
     pub input_tokens: u32,
 }
