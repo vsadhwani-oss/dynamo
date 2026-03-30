@@ -1,10 +1,15 @@
 // SPDX-FileCopyrightText: Copyright (c) 2024-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Anthropic Messages API types and conversion logic.
+//! Anthropic Messages API conversion logic.
 //!
-//! All request/response types for the `/v1/messages` endpoint, plus
-//! bidirectional conversion to/from the internal chat completions format.
+//! Pure protocol types live in `dynamo_async_openai::types::anthropic`.
+//! This module provides bidirectional conversion to/from the internal
+//! chat completions format used by the Dynamo engine.
+
+// Re-export all pure Anthropic protocol types so existing `use crate::protocols::anthropic::*`
+// continues to work throughout dynamo-llm.
+pub use dynamo_async_openai::types::anthropic::*;
 
 use dynamo_async_openai::types::{
     ChatCompletionMessageToolCall, ChatCompletionNamedToolChoice,
@@ -17,7 +22,6 @@ use dynamo_async_openai::types::{
     ChatCompletionTool, ChatCompletionToolChoiceOption, ChatCompletionToolType, FunctionName,
     FunctionObject, ImageUrl, ReasoningContent,
 };
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::protocols::openai::chat_completions::{
@@ -1211,11 +1215,6 @@ fn convert_anthropic_tool_choice(tc: &AnthropicToolChoice) -> ChatCompletionTool
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Conversion: NvCreateChatCompletionResponse -> AnthropicMessageResponse
-// ---------------------------------------------------------------------------
-
 /// Convert a completed chat completion response into an Anthropic Messages response.
 pub fn chat_completion_to_anthropic_response(
     chat_resp: NvCreateChatCompletionResponse,
@@ -1223,7 +1222,7 @@ pub fn chat_completion_to_anthropic_response(
 ) -> AnthropicMessageResponse {
     let msg_id = format!("msg_{}", Uuid::new_v4().simple());
 
-    let choice = chat_resp.choices.into_iter().next();
+    let choice = chat_resp.inner.choices.into_iter().next();
     let mut content = Vec::new();
     let mut stop_reason = None;
 
@@ -1294,6 +1293,7 @@ pub fn chat_completion_to_anthropic_response(
 
     // Map usage
     let usage = chat_resp
+        .inner
         .usage
         .map(|u| {
             let cache_read_input_tokens = u
@@ -1677,38 +1677,40 @@ mod tests {
     #[test]
     fn test_chat_completion_to_anthropic_response() {
         let chat_resp = NvCreateChatCompletionResponse {
-            id: "chatcmpl-xyz".into(),
-            choices: vec![dynamo_async_openai::types::ChatChoice {
-                index: 0,
-                message: dynamo_async_openai::types::ChatCompletionResponseMessage {
-                    content: Some(
-                        dynamo_async_openai::types::ChatCompletionMessageContent::Text(
-                            "Hello!".to_string(),
+            inner: dynamo_async_openai::types::CreateChatCompletionResponse {
+                id: "chatcmpl-xyz".into(),
+                choices: vec![dynamo_async_openai::types::ChatChoice {
+                    index: 0,
+                    message: dynamo_async_openai::types::ChatCompletionResponseMessage {
+                        content: Some(
+                            dynamo_async_openai::types::ChatCompletionMessageContent::Text(
+                                "Hello!".to_string(),
+                            ),
                         ),
-                    ),
-                    refusal: None,
-                    tool_calls: None,
-                    role: dynamo_async_openai::types::Role::Assistant,
-                    function_call: None,
-                    audio: None,
-                    reasoning_content: None,
-                },
-                finish_reason: Some(dynamo_async_openai::types::FinishReason::Stop),
-                stop_reason: None,
-                logprobs: None,
-            }],
-            created: 1726000000,
-            model: "test-model".into(),
-            service_tier: None,
-            system_fingerprint: None,
-            object: "chat.completion".to_string(),
-            usage: Some(dynamo_async_openai::types::CompletionUsage {
-                prompt_tokens: 10,
-                completion_tokens: 5,
-                total_tokens: 15,
-                prompt_tokens_details: None,
-                completion_tokens_details: None,
-            }),
+                        refusal: None,
+                        tool_calls: None,
+                        role: dynamo_async_openai::types::Role::Assistant,
+                        function_call: None,
+                        audio: None,
+                        reasoning_content: None,
+                    },
+                    finish_reason: Some(dynamo_async_openai::types::FinishReason::Stop),
+                    stop_reason: None,
+                    logprobs: None,
+                }],
+                created: 1726000000,
+                model: "test-model".into(),
+                service_tier: None,
+                system_fingerprint: None,
+                object: "chat.completion".to_string(),
+                usage: Some(dynamo_async_openai::types::CompletionUsage {
+                    prompt_tokens: 10,
+                    completion_tokens: 5,
+                    total_tokens: 15,
+                    prompt_tokens_details: None,
+                    completion_tokens_details: None,
+                }),
+            },
             nvext: None,
         };
 

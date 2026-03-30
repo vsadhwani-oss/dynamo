@@ -109,7 +109,7 @@ impl AnthropicStreamConverter {
         // Only update output_token_count — input_token_count is set once from the
         // estimate in new() and must stay consistent between message_start and
         // message_delta to avoid Claude Code's token display jumping.
-        if let Some(usage) = &chunk.usage {
+        if let Some(usage) = &chunk.inner.usage {
             self.output_token_count = usage.completion_tokens;
             self.cached_token_count = usage
                 .prompt_tokens_details
@@ -117,7 +117,7 @@ impl AnthropicStreamConverter {
                 .and_then(|d| d.cached_tokens);
         }
 
-        for choice in &chunk.choices {
+        for choice in &chunk.inner.choices {
             let delta = &choice.delta;
 
             // Track finish reason
@@ -446,7 +446,7 @@ impl AnthropicStreamConverter {
     ) -> Vec<TaggedEvent> {
         let mut events = Vec::new();
 
-        if let Some(usage) = &chunk.usage {
+        if let Some(usage) = &chunk.inner.usage {
             self.output_token_count = usage.completion_tokens;
             self.cached_token_count = usage
                 .prompt_tokens_details
@@ -454,7 +454,7 @@ impl AnthropicStreamConverter {
                 .and_then(|d| d.cached_tokens);
         }
 
-        for choice in &chunk.choices {
+        for choice in &chunk.inner.choices {
             let delta = &choice.delta;
 
             if let Some(ref fr) = choice.finish_reason {
@@ -723,27 +723,29 @@ mod tests {
     fn text_chunk(text: &str) -> NvCreateChatCompletionStreamResponse {
         #[allow(deprecated)]
         NvCreateChatCompletionStreamResponse {
-            id: "chat-1".into(),
-            choices: vec![ChatChoiceStream {
-                index: 0,
-                delta: ChatCompletionStreamResponseDelta {
-                    content: Some(ChatCompletionMessageContent::Text(text.into())),
-                    function_call: None,
-                    tool_calls: None,
-                    role: None,
-                    refusal: None,
-                    reasoning_content: None,
-                },
-                finish_reason: None,
-                stop_reason: None,
-                logprobs: None,
-            }],
-            created: 0,
-            model: "test".into(),
-            service_tier: None,
-            system_fingerprint: None,
-            object: "chat.completion.chunk".into(),
-            usage: None,
+            inner: dynamo_async_openai::types::CreateChatCompletionStreamResponse {
+                id: "chat-1".into(),
+                choices: vec![ChatChoiceStream {
+                    index: 0,
+                    delta: ChatCompletionStreamResponseDelta {
+                        content: Some(ChatCompletionMessageContent::Text(text.into())),
+                        function_call: None,
+                        tool_calls: None,
+                        role: None,
+                        refusal: None,
+                        reasoning_content: None,
+                    },
+                    finish_reason: None,
+                    stop_reason: None,
+                    logprobs: None,
+                }],
+                created: 0,
+                model: "test".into(),
+                service_tier: None,
+                system_fingerprint: None,
+                object: "chat.completion.chunk".into(),
+                usage: None,
+            },
             nvext: None,
         }
     }
@@ -756,35 +758,37 @@ mod tests {
     ) -> NvCreateChatCompletionStreamResponse {
         #[allow(deprecated)]
         NvCreateChatCompletionStreamResponse {
-            id: "chat-1".into(),
-            choices: vec![ChatChoiceStream {
-                index: 0,
-                delta: ChatCompletionStreamResponseDelta {
-                    content: None,
-                    function_call: None,
-                    tool_calls: Some(vec![ChatCompletionMessageToolCallChunk {
-                        index: tc_index,
-                        id: id.map(String::from),
-                        r#type: Some(ChatCompletionToolType::Function),
-                        function: Some(FunctionCallStream {
-                            name: name.map(String::from),
-                            arguments: args.map(String::from),
-                        }),
-                    }]),
-                    role: None,
-                    refusal: None,
-                    reasoning_content: None,
-                },
-                finish_reason: None,
-                stop_reason: None,
-                logprobs: None,
-            }],
-            created: 0,
-            model: "test".into(),
-            service_tier: None,
-            system_fingerprint: None,
-            object: "chat.completion.chunk".into(),
-            usage: None,
+            inner: dynamo_async_openai::types::CreateChatCompletionStreamResponse {
+                id: "chat-1".into(),
+                choices: vec![ChatChoiceStream {
+                    index: 0,
+                    delta: ChatCompletionStreamResponseDelta {
+                        content: None,
+                        function_call: None,
+                        tool_calls: Some(vec![ChatCompletionMessageToolCallChunk {
+                            index: tc_index,
+                            id: id.map(String::from),
+                            r#type: Some(ChatCompletionToolType::Function),
+                            function: Some(FunctionCallStream {
+                                name: name.map(String::from),
+                                arguments: args.map(String::from),
+                            }),
+                        }]),
+                        role: None,
+                        refusal: None,
+                        reasoning_content: None,
+                    },
+                    finish_reason: None,
+                    stop_reason: None,
+                    logprobs: None,
+                }],
+                created: 0,
+                model: "test".into(),
+                service_tier: None,
+                system_fingerprint: None,
+                object: "chat.completion.chunk".into(),
+                usage: None,
+            },
             nvext: None,
         }
     }
@@ -909,27 +913,29 @@ mod tests {
     fn reasoning_chunk(text: &str) -> NvCreateChatCompletionStreamResponse {
         #[allow(deprecated)]
         NvCreateChatCompletionStreamResponse {
-            id: "chat-1".into(),
-            choices: vec![ChatChoiceStream {
-                index: 0,
-                delta: ChatCompletionStreamResponseDelta {
-                    content: None,
-                    function_call: None,
-                    tool_calls: None,
-                    role: None,
-                    refusal: None,
-                    reasoning_content: Some(text.into()),
-                },
-                finish_reason: None,
-                stop_reason: None,
-                logprobs: None,
-            }],
-            created: 0,
-            model: "test".into(),
-            service_tier: None,
-            system_fingerprint: None,
-            object: "chat.completion.chunk".into(),
-            usage: None,
+            inner: dynamo_async_openai::types::CreateChatCompletionStreamResponse {
+                id: "chat-1".into(),
+                choices: vec![ChatChoiceStream {
+                    index: 0,
+                    delta: ChatCompletionStreamResponseDelta {
+                        content: None,
+                        function_call: None,
+                        tool_calls: None,
+                        role: None,
+                        refusal: None,
+                        reasoning_content: Some(text.into()),
+                    },
+                    finish_reason: None,
+                    stop_reason: None,
+                    logprobs: None,
+                }],
+                created: 0,
+                model: "test".into(),
+                service_tier: None,
+                system_fingerprint: None,
+                object: "chat.completion.chunk".into(),
+                usage: None,
+            },
             nvext: None,
         }
     }
