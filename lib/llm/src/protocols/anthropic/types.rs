@@ -65,7 +65,7 @@ where
         cache_control: Option<CacheControl>,
     }
 
-    let maybe: Option<SystemPrompt> = Option::deserialize(deserializer)?;
+    let maybe: Option<SystemPrompt> = serde::Deserialize::deserialize(deserializer)?;
     Ok(maybe.map(|sp| match sp {
         SystemPrompt::Text(s) => SystemContent {
             text: s,
