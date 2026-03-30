@@ -35,7 +35,7 @@ use crate::protocols::openai::nvext::{CacheControl, NvExt};
 // ---------------------------------------------------------------------------
 
 /// Parsed system prompt content, preserving cache_control from block arrays.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct SystemContent {
     /// The concatenated text from all system blocks (or the plain string).
     pub text: String,
@@ -51,14 +51,14 @@ fn deserialize_system_prompt<'de, D>(deserializer: D) -> Result<Option<SystemCon
 where
     D: serde::Deserializer<'de>,
 {
-    #[derive(Deserialize)]
+    #[derive(serde::Deserialize)]
     #[serde(untagged)]
     enum SystemPrompt {
         Text(String),
         Blocks(Vec<SystemBlock>),
     }
 
-    #[derive(Deserialize)]
+    #[derive(serde::Deserialize)]
     struct SystemBlock {
         text: String,
         #[serde(default)]
@@ -91,7 +91,7 @@ where
 // ---------------------------------------------------------------------------
 
 /// Top-level request body for `POST /v1/messages`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicCreateMessageRequest {
     /// The model to use (e.g. "claude-sonnet-4-20250514").
     pub model: String,
@@ -177,7 +177,7 @@ pub struct AnthropicCreateMessageRequest {
 /// with its internal reasoning. `budget_tokens` controls the maximum tokens
 /// available for thinking (minimum 1024, must be less than `max_tokens`).
 /// When `type` is `"disabled"`, no thinking blocks are produced.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ThinkingConfig {
     /// Either `"enabled"` or `"disabled"`.
     #[serde(rename = "type")]
@@ -200,7 +200,7 @@ impl AnthropicCreateMessageRequest {
 }
 
 /// A single message in the conversation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicMessage {
     pub role: AnthropicRole,
     #[serde(flatten)]
@@ -208,7 +208,7 @@ pub struct AnthropicMessage {
 }
 
 /// The role of a message sender.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum AnthropicRole {
     User,
@@ -216,7 +216,7 @@ pub enum AnthropicRole {
 }
 
 /// Message content — either a plain string or an array of content blocks.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum AnthropicMessageContent {
     /// Plain text content.
@@ -231,7 +231,7 @@ pub enum AnthropicMessageContent {
 /// `server_tool_use`, `redacted_thinking`) are captured as `Other(Value)` instead
 /// of causing a hard deserialization failure. This is important because Claude
 /// Code may send block types that we don't yet handle.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 #[serde(tag = "type")]
 pub enum AnthropicContentBlock {
     /// Text content block. May optionally include `citations` — references to
@@ -308,7 +308,7 @@ pub enum AnthropicContentBlock {
 
 /// Content of a `tool_result` block — either a plain string or an array of
 /// content blocks (the Anthropic API accepts both).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum ToolResultContent {
     Text(String),
@@ -333,7 +333,7 @@ impl ToolResultContent {
 }
 
 /// A content block within a `tool_result.content` array.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum ToolResultContentBlock {
     Text {
@@ -500,7 +500,7 @@ impl<'de> Deserialize<'de> for AnthropicContentBlock {
 }
 
 /// Image source for image content blocks.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicImageSource {
     #[serde(rename = "type")]
     pub source_type: String,
@@ -515,7 +515,7 @@ pub struct AnthropicImageSource {
 /// by their `type` field (e.g. `"web_search_20260209"`) and may not have
 /// `input_schema`. We keep all fields optional beyond `name` so both
 /// kinds deserialize successfully and pass through to the backend.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicTool {
     /// Tool name (required for client tools, present on server tools too).
     pub name: String,
@@ -535,7 +535,7 @@ pub struct AnthropicTool {
 }
 
 /// Tool choice specification.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum AnthropicToolChoice {
     /// Named tool: `{type: "tool", name: "..."}`
@@ -546,7 +546,7 @@ pub enum AnthropicToolChoice {
 }
 
 /// Simple tool choice modes.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicToolChoiceSimple {
     #[serde(rename = "type")]
     pub choice_type: AnthropicToolChoiceMode,
@@ -556,7 +556,7 @@ pub struct AnthropicToolChoiceSimple {
     pub disable_parallel_tool_use: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum AnthropicToolChoiceMode {
     Auto,
@@ -566,7 +566,7 @@ pub enum AnthropicToolChoiceMode {
 }
 
 /// Named tool choice.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicToolChoiceNamed {
     #[serde(rename = "type")]
     pub choice_type: AnthropicToolChoiceMode,
@@ -582,7 +582,7 @@ pub struct AnthropicToolChoiceNamed {
 // ---------------------------------------------------------------------------
 
 /// Response body for `POST /v1/messages` (non-streaming).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicMessageResponse {
     pub id: String,
     #[serde(rename = "type")]
@@ -600,7 +600,7 @@ pub struct AnthropicMessageResponse {
 /// The Anthropic API returns up to 12 different block types. We model the
 /// common ones explicitly and catch the rest as `Other` so the proxy can
 /// forward them without losing data.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "type")]
 pub enum AnthropicResponseContentBlock {
     #[serde(rename = "thinking")]
@@ -640,7 +640,7 @@ pub enum AnthropicResponseContentBlock {
 }
 
 /// Token usage information.
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default)]
 pub struct AnthropicUsage {
     pub input_tokens: u32,
     pub output_tokens: u32,
@@ -653,7 +653,7 @@ pub struct AnthropicUsage {
 }
 
 /// Reason the model stopped generating.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum AnthropicStopReason {
     EndTurn,
@@ -672,7 +672,7 @@ pub enum AnthropicStopReason {
 // ---------------------------------------------------------------------------
 
 /// SSE event types for the Anthropic streaming API.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "type")]
 pub enum AnthropicStreamEvent {
     #[serde(rename = "message_start")]
@@ -707,7 +707,7 @@ pub enum AnthropicStreamEvent {
 }
 
 /// Delta content in a streaming content_block_delta event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(tag = "type")]
 pub enum AnthropicDelta {
     #[serde(rename = "thinking_delta")]
@@ -725,7 +725,7 @@ pub enum AnthropicDelta {
 }
 
 /// The delta body in a message_delta event.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicMessageDeltaBody {
     pub stop_reason: Option<AnthropicStopReason>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -737,7 +737,7 @@ pub struct AnthropicMessageDeltaBody {
 // ---------------------------------------------------------------------------
 
 /// Anthropic API error response wrapper.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicErrorResponse {
     #[serde(rename = "type")]
     pub object_type: String,
@@ -745,7 +745,7 @@ pub struct AnthropicErrorResponse {
 }
 
 /// Error body within an error response.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnthropicErrorBody {
     #[serde(rename = "type")]
     pub error_type: String,
