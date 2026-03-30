@@ -28,7 +28,7 @@ use crate::protocols::openai::chat_completions::{
     NvCreateChatCompletionRequest, NvCreateChatCompletionResponse,
 };
 use crate::protocols::openai::common_ext::CommonExt;
-use crate::protocols::openai::nvext::{CacheControl, NvExt};
+use crate::protocols::openai::nvext::NvExt;
 
 // ---------------------------------------------------------------------------
 // Custom deserializers
@@ -41,7 +41,7 @@ pub struct SystemContent {
     pub text: String,
     /// Cache control from the last system block that had one.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub cache_control: Option<CacheControl>,
+    pub cache_control: Option<crate::protocols::openai::nvext::CacheControl>,
 }
 
 /// Deserialize `system` from either a plain string or an array of text blocks.
@@ -62,7 +62,7 @@ where
     struct SystemBlock {
         text: String,
         #[serde(default)]
-        cache_control: Option<CacheControl>,
+        cache_control: Option<crate::protocols::openai::nvext::CacheControl>,
     }
 
     let maybe: Option<SystemPrompt> = serde::Deserialize::deserialize(deserializer)?;
@@ -147,7 +147,7 @@ pub struct AnthropicCreateMessageRequest {
     /// Matches the Anthropic Messages API automatic caching mode.
     /// See: https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching#automatic-caching
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub cache_control: Option<CacheControl>,
+    pub cache_control: Option<crate::protocols::openai::nvext::CacheControl>,
 
     /// Extended thinking configuration. When enabled, the model produces
     /// `thinking` content blocks containing its internal reasoning before
@@ -243,7 +243,7 @@ pub enum AnthropicContentBlock {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         citations: Option<Vec<serde_json::Value>>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
-        cache_control: Option<CacheControl>,
+        cache_control: Option<crate::protocols::openai::nvext::CacheControl>,
     },
     /// Image content block.
     #[serde(rename = "image")]
@@ -255,7 +255,7 @@ pub enum AnthropicContentBlock {
         name: String,
         input: serde_json::Value,
         #[serde(default, skip_serializing_if = "Option::is_none")]
-        cache_control: Option<CacheControl>,
+        cache_control: Option<crate::protocols::openai::nvext::CacheControl>,
     },
     /// Tool result from user.
     #[serde(rename = "tool_result")]
@@ -266,7 +266,7 @@ pub enum AnthropicContentBlock {
         #[serde(skip_serializing_if = "Option::is_none")]
         is_error: Option<bool>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
-        cache_control: Option<CacheControl>,
+        cache_control: Option<crate::protocols::openai::nvext::CacheControl>,
     },
     /// Thinking content block from assistant (extended thinking / reasoning).
     #[serde(rename = "thinking")]
@@ -274,7 +274,7 @@ pub enum AnthropicContentBlock {
         thinking: String,
         signature: String,
         #[serde(default, skip_serializing_if = "Option::is_none")]
-        cache_control: Option<CacheControl>,
+        cache_control: Option<crate::protocols::openai::nvext::CacheControl>,
     },
     /// Redacted thinking block from assistant. Contains encrypted reasoning data
     /// that is opaque to the client but must be passed back verbatim in multi-turn
@@ -369,7 +369,7 @@ impl<'de> serde::Deserialize<'de> for AnthropicContentBlock {
                     .get("citations")
                     .cloned()
                     .and_then(|v| serde_json::from_value(v).ok());
-                let cache_control: Option<CacheControl> = value
+                let cache_control: Option<crate::protocols::openai::nvext::CacheControl> = value
                     .get("cache_control")
                     .cloned()
                     .and_then(|v| serde_json::from_value(v).ok());
@@ -397,7 +397,7 @@ impl<'de> serde::Deserialize<'de> for AnthropicContentBlock {
                     .ok_or_else(|| serde::de::Error::missing_field("name"))?
                     .to_string();
                 let input = value.get("input").cloned().unwrap_or(serde_json::json!({}));
-                let cache_control: Option<CacheControl> = value
+                let cache_control: Option<crate::protocols::openai::nvext::CacheControl> = value
                     .get("cache_control")
                     .cloned()
                     .and_then(|v| serde_json::from_value(v).ok());
@@ -419,7 +419,7 @@ impl<'de> serde::Deserialize<'de> for AnthropicContentBlock {
                     .cloned()
                     .and_then(|v| serde_json::from_value(v).ok());
                 let is_error = value.get("is_error").and_then(|v| v.as_bool());
-                let cache_control: Option<CacheControl> = value
+                let cache_control: Option<crate::protocols::openai::nvext::CacheControl> = value
                     .get("cache_control")
                     .cloned()
                     .and_then(|v| serde_json::from_value(v).ok());
@@ -441,7 +441,7 @@ impl<'de> serde::Deserialize<'de> for AnthropicContentBlock {
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| serde::de::Error::missing_field("signature"))?
                     .to_string();
-                let cache_control: Option<CacheControl> = value
+                let cache_control: Option<crate::protocols::openai::nvext::CacheControl> = value
                     .get("cache_control")
                     .cloned()
                     .and_then(|v| serde_json::from_value(v).ok());
@@ -531,7 +531,7 @@ pub struct AnthropicTool {
     pub input_schema: Option<serde_json::Value>,
     /// Cache control breakpoint on this tool definition.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub cache_control: Option<CacheControl>,
+    pub cache_control: Option<crate::protocols::openai::nvext::CacheControl>,
 }
 
 /// Tool choice specification.
@@ -883,7 +883,7 @@ impl TryFrom<AnthropicCreateMessageRequest> for NvCreateChatCompletionRequest {
             },
             nvext: {
                 // Collect per-block cache_control: use the last one found
-                let mut last_block_cc: Option<CacheControl> = None;
+                let mut last_block_cc: Option<crate::protocols::openai::nvext::CacheControl> = None;
                 for msg in &req.messages {
                     if let AnthropicMessageContent::Blocks { content } = &msg.content {
                         for block in content {
