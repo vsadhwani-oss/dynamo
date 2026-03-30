@@ -346,7 +346,7 @@ pub enum ToolResultContentBlock {
 /// Custom deserializer for `AnthropicContentBlock` that handles unknown types
 /// gracefully. Since serde's `#[serde(other)]` is not supported on internally
 /// tagged enums, we deserialize as `Value` first and dispatch manually.
-impl<'de> Deserialize<'de> for AnthropicContentBlock {
+impl<'de> serde::Deserialize<'de> for AnthropicContentBlock {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
