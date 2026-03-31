@@ -19,6 +19,7 @@ pub mod images;
 pub mod models;
 pub mod nvext;
 pub mod responses;
+pub mod tokenization;
 pub mod tools;
 pub mod validate;
 pub mod videos;
