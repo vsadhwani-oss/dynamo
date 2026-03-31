@@ -2542,12 +2542,7 @@ mod tests {
                 content: Some(ChatCompletionRequestAssistantMessageContent::Text(
                     "Nice to meet you!".to_string(),
                 )),
-                reasoning_content: None,
-                refusal: None,
-                name: None,
-                audio: None,
-                tool_calls: None,
-                function_call: None,
+                ..Default::default()
             }),
             ChatCompletionRequestMessage::User(ChatCompletionRequestUserMessage {
                 content: ChatCompletionRequestUserMessageContent::Text(
@@ -3427,12 +3422,7 @@ mod tests {
                 content: Some(ChatCompletionRequestAssistantMessageContent::Text(
                     "Sure.".to_string(),
                 )),
-                reasoning_content: None,
-                refusal: None,
-                name: None,
-                audio: None,
-                tool_calls: None,
-                function_call: None,
+                ..Default::default()
             }),
         ];
 
@@ -3532,12 +3522,7 @@ mod tests {
                 content: Some(ChatCompletionRequestAssistantMessageContent::Text(
                     "Sure,".to_string(),
                 )),
-                reasoning_content: None,
-                refusal: None,
-                name: None,
-                audio: None,
-                tool_calls: None,
-                function_call: None,
+                ..Default::default()
             },
         ));
         let tools = sample_tools();
