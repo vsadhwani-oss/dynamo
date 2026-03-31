@@ -261,7 +261,7 @@ def _planner_profile_data_npz_path() -> Path:
 def _planner_profile_data_dir_path() -> Path:
     return (
         Path(__file__).resolve().parents[4]
-        / "tests/planner/profiling_results/H200_TP1P_TP1D"
+        / "components/src/dynamo/planner/tests/data/profiling_results/H200_TP1P_TP1D"
     )
 
 
